@@ -1,0 +1,51 @@
+
+USE master;
+ALTER DATABASE CqrsUserDb SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+DROP DATABASE CqrsUserDb;
+
+-- create DB if not exists (run as admin)
+IF DB_ID('CqrsUserDb') IS NULL
+BEGIN
+    CREATE DATABASE CqrsUserDb;
+END
+GO
+
+USE CqrsUserDb;
+GO
+
+-- Users table
+
+SELECT * FROM Users;
+SELECT * FROM UserEvents;
+GO
+
+
+//new
+
+-- Users table
+IF OBJECT_ID('dbo.Users') IS NULL
+BEGIN
+CREATE TABLE Users (
+    UserNumber INT IDENTITY(1,1) NOT NULL, -- Short display ID
+    Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    FirstName NVARCHAR(100) NOT NULL,
+    LastName NVARCHAR(100) NOT NULL,
+    Email NVARCHAR(200) NOT NULL UNIQUE,
+    CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
+);
+END
+GO
+
+-- UserEvents table
+IF OBJECT_ID('dbo.UserEvents') IS NULL
+BEGIN
+CREATE TABLE UserEvents (
+    EventId UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    UserId UNIQUEIDENTIFIER NOT NULL,
+    EventType NVARCHAR(100) NOT NULL,
+    EventData NVARCHAR(MAX) NOT NULL,
+    CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT FK_UserEvents_Users FOREIGN KEY (UserId) REFERENCES Users(Id)
+);
+END
+GO
